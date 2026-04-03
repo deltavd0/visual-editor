@@ -1,36 +1,148 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: sans-serif;
-  background: #0f0f0f;
+  font-family: Inter, sans-serif;
+  background: #0b0b0b;
   color: white;
 }
 
-.toolbar {
-  padding: 10px;
-  background: #1a1a1a;
-  border-bottom: 1px solid #333;
+/* layout */
+.app {
+  display: flex;
+  height: 100vh;
 }
 
-button {
-  background: #2d2dff;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 8px;
+/* sidebar */
+.sidebar {
+  width: 220px;
+  padding: 30px 20px;
+}
+
+.sidebar h1 {
+  font-size: 26px;
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.tools {
+  background: #151515;
+  border-radius: 14px;
+  padding: 15px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* botones */
+.tool {
+  width: 42px;
+  height: 42px;
+  background: #222;
+  border-radius: 10px;
   cursor: pointer;
-}
-
-#canvas {
-  width: 100vw;
-  height: calc(100vh - 50px);
   position: relative;
-  background: #181818;
+  transition: all 0.2s ease;
 }
 
-.shape {
-  width: 100px;
-  height: 100px;
-  background: #4CAF50;
-  position: absolute;
-  border-radius: 8px;
+.tool:hover {
+  background: #333;
+  transform: scale(1.08);
 }
+
+.tool:active {
+  transform: scale(0.95);
+}
+
+/* iconos */
+.tool::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.tool[data-shape="square"]::after {
+  width: 18px;
+  height: 18px;
+  background: #ddd;
+}
+
+.circle::after {
+  width: 18px;
+  height: 18px;
+  background: #ddd;
+  border-radius: 50%;
+}
+
+.triangle::after {
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 18px solid #ddd;
+}
+
+/* workspace */
+.workspace {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* canvas */
+#canvas {
+  width: 900px;
+  height: 500px;
+  background: #e6e6e6;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* shapes */
+.shape {
+  position: absolute;
+  background: #222;
+  border: none;
+}
+
+/* triangle real */
+.shape.triangle {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* selección */
+.shape.selected {
+  outline: 2px solid #4da3ff;
+}
+
+/* handles */
+.handle {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 1px solid #4da3ff;
+  position: absolute;
+  z-index: 10;
+}
+
+/* posiciones */
+.handle.tl { top: -5px; left: -5px; cursor: nwse-resize; }
+.handle.tr { top: -5px; right: -5px; cursor: nesw-resize; }
+.handle.bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.handle.br { bottom: -5px; right: -5px; cursor: nwse-resize; }
+
+.handle.tm { top: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle.bm { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle.ml { left: -5px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.handle.mr { right: -5px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }

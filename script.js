@@ -1,57 +1,168 @@
 const canvas = document.getElementById("canvas");
-const button = document.getElementById("addSquare");
+const tools = document.querySelectorAll(".tool");
 
-button.addEventListener("click", () => {
-  const square = document.createElement("div");
-  square.classList.add("shape");
+let selected = null;
 
-  square.style.left = "50px";
-  square.style.top = "50px";
+/* =========================
+   CREAR FORMA
+========================= */
+function createShape(type, x = 50, y = 50) {
+  const el = document.createElement("div");
+  el.classList.add("shape");
 
-  canvas.appendChild(square);
+  el.style.width = "100px";
+  el.style.height = "100px";
+  el.style.left = x + "px";
+  el.style.top = y + "px";
 
-  enableInteractions(square);
+  if (type === "circle") el.style.borderRadius = "50%";
+  if (type === "triangle") el.classList.add("triangle");
+
+  canvas.appendChild(el);
+
+  addHandles(el);
+  enableDrag(el);
+  enableResize(el);
+
+  select(el);
+}
+
+/* =========================
+   CLICK BOTÓN
+========================= */
+tools.forEach(tool => {
+  tool.addEventListener("click", () => {
+    createShape(tool.dataset.shape);
+  });
 });
 
-function enableInteractions(target) {
+/* =========================
+   DRAG DESDE SIDEBAR
+========================= */
+tools.forEach(tool => {
+  interact(tool).draggable({
+    listeners: {
+      move(event) {
+        const rect = canvas.getBoundingClientRect();
 
-  interact(target)
-    .draggable({
-      listeners: {
-        move(event) {
-          const target = event.target;
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
 
-          let x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-          let y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-
-          target.style.transform = `translate(${x}px, ${y}px)`;
-
-          target.setAttribute('data-x', x);
-          target.setAttribute('data-y', y);
+        if (
+          x > 0 && x < rect.width &&
+          y > 0 && y < rect.height
+        ) {
+          createShape(tool.dataset.shape, x, y);
         }
       }
-    })
-    .resizable({
-      edges: { left: true, right: true, bottom: true, top: true },
+    }
+  });
+});
 
-      listeners: {
-        move(event) {
-          let { x, y } = event.target.dataset;
+/* =========================
+   SELECCIÓN
+========================= */
+function select(el) {
+  document.querySelectorAll(".shape").forEach(s => {
+    s.classList.remove("selected");
+    toggleHandles(s, false);
+  });
 
-          x = (parseFloat(x) || 0);
-          y = (parseFloat(y) || 0);
+  selected = el;
+  el.classList.add("selected");
+  toggleHandles(el, true);
+}
 
-          event.target.style.width = `${event.rect.width}px`;
-          event.target.style.height = `${event.rect.height}px`;
+canvas.addEventListener("mousedown", e => {
+  if (!e.target.classList.contains("shape")) {
+    deselect();
+  }
+});
 
-          x += event.deltaRect.left;
-          y += event.deltaRect.top;
+function deselect() {
+  if (selected) {
+    selected.classList.remove("selected");
+    toggleHandles(selected, false);
+  }
+  selected = null;
+}
 
-          event.target.style.transform = `translate(${x}px, ${y}px)`;
+/* =========================
+   HANDLES
+========================= */
+function addHandles(el) {
+  const positions = ["tl","tr","bl","br","tm","bm","ml","mr"];
 
-          event.target.dataset.x = x;
-          event.target.dataset.y = y;
-        }
+  positions.forEach(pos => {
+    const h = document.createElement("div");
+    h.classList.add("handle", pos);
+    h.style.display = "none";
+    el.appendChild(h);
+  });
+}
+
+function toggleHandles(el, show) {
+  el.querySelectorAll(".handle").forEach(h => {
+    h.style.display = show ? "block" : "none";
+  });
+}
+
+/* =========================
+   DRAG (LIMITADO)
+========================= */
+function enableDrag(el) {
+  interact(el).draggable({
+    modifiers: [
+      interact.modifiers.restrictRect({
+        restriction: canvas
+      })
+    ],
+    listeners: {
+      move(event) {
+        const t = event.target;
+
+        let x = parseFloat(t.style.left);
+        let y = parseFloat(t.style.top);
+
+        x += event.dx;
+        y += event.dy;
+
+        t.style.left = x + "px";
+        t.style.top = y + "px";
       }
-    });
+    }
+  });
+
+  el.addEventListener("mousedown", () => select(el));
+}
+
+/* =========================
+   RESIZE
+========================= */
+function enableResize(el) {
+  interact(el).resizable({
+    edges: { top: true, left: true, bottom: true, right: true },
+
+    modifiers: [
+      interact.modifiers.restrictEdges({
+        outer: canvas
+      })
+    ],
+
+    listeners: {
+      move(event) {
+        let x = parseFloat(event.target.style.left);
+        let y = parseFloat(event.target.style.top);
+
+        event.target.style.width = event.rect.width + "px";
+        event.target.style.height = event.rect.height + "px";
+
+        x += event.deltaRect.left;
+        y += event.deltaRect.top;
+
+        event.target.style.left = x + "px";
+        event.target.style.top = y + "px";
+      }
+    }
+  });
 }
