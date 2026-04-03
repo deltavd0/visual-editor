@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #0f0f0f;
+  color: white;
+}
+
+.toolbar {
+  padding: 10px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+}
+
+button {
+  background: #2d2dff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#canvas {
+  width: 100vw;
+  height: calc(100vh - 50px);
+  position: relative;
+  background: #181818;
+}
+
+.shape {
+  width: 100px;
+  height: 100px;
+  background: #4CAF50;
+  position: absolute;
+  border-radius: 8px;
+}
